@@ -1,0 +1,8 @@
+---
+
+- hosts: server
+  remote_user: root
+  gather_facts: yes
+  roles:
+    - { role: 'setup', tags: 'setup' }
+    
