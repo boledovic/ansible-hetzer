@@ -1,0 +1,14 @@
+# {{ ansible_managed }}
+DRIVE1 /dev/sdc
+SWRAID 0
+
+BOOTLOADER grub
+HOSTNAME test.hetzner
+
+PART /boot ext3 1G
+PART swap swap 32G
+PART lvm vg 300G
+LV vg root / ext4 100G
+LV vg var /var ext4 100G
+
+IMAGE /root/.oldroot/nfs/images/Debian-bullseye-latest-amd64-base.tar.gz
