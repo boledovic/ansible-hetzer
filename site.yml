@@ -3,5 +3,5 @@
   remote_user: root
   gather_facts: yes
   roles:
-#    - { role: 'setup', tags: 'setup' }
-    - { role: 'test', tags: 'test' }
+    - { role: 'setup', tags: 'setup' }
+#    - { role: 'test', tags: 'test' }

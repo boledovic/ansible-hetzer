@@ -11,126 +11,7 @@
         msg: System not in RESCUE mode
       when: rescue_mode.rc != 0
 
-#read info about partitions
-    - name: read info about partitions
-      parted:
-        device: "{{ item }}"
-        unit: MiB
-      register: info
-      with_items:
-            - /dev/sda
-            - /dev/sdb 
-            - /dev/sdc
-            - /dev/sdd
-
-#remove all lg, lv
-    - shell: "dmsetup remove_all"
-
-#temporary solution-------------------------------------------
-    - shell: "mdadm --stop /dev/md[0-2]"
-
-#delete partitions which we read earlier
-    - name: delete partitions
-      parted: 
-        device: "{{ item.0.disk.dev }}"
-        number: "{{ item.1.num }}"
-        state: absent
-      loop: "{{ info.results|subelements('partitions') }}"
-
-#creating boot partitions to later use in RAID1
-    - name: create boot partition /dev/sd[c-d]1
-      parted:
-        device: "{{ item }}"
-        number: 1
-        state: present
-        part_end: 1GiB
-      with_items: 
-        -  /dev/sdc
-        -  /dev/sdd
-
-#creating RAID partitions to later use in RAID0
-    - name: create RAID partition /dev/sd[c-d]2
-      parted:
-        device: "{{ item }}"
-        number: 2
-        state: present
-        part_start: 1GiB
-        part_end: 33GiB
-      with_items: 
-        -  /dev/sdc
-        -  /dev/sdd
-
-#creating LVM partitions to later use in RAID1
-    - name: create LVM partition /dev/sd[c-d]3
-      parted:
-        device: "{{ item }}"
-        number: 3
-        flags: [ lvm ]
-        state: present
-        part_start: 33GiB
-        part_end: 333GiB
-      with_items: 
-        -  /dev/sdc 
-        -  /dev/sdd
-
-#creating RAID1 array
-    - name: create /dev/md0 RAID1 array from boot partitions
-      shell: "yes | mdadm --create /dev/md0 --level=1 --raid-devices=2 /dev/sdc1 /dev/sdd1 --metadata=0.90"
-
-#creating RAID0 array
-    - name: create /dev/md1 RAID0 array from SWAP partitions
-      shell: "yes | mdadm --create /dev/md1 --level=0 --raid-devices=2 /dev/sdc2 /dev/sdd2"
-
-#creating RAID1 array
-    - name: create /dev/md2 RAID1 array from LVM partitions
-      shell: "yes | mdadm --create /dev/md2 --level=1 --raid-devices=2 /dev/sdc3 /dev/sdd3 --metadata=0.90"
-
-#creating volume group vg0 inside RAID1 array
-    - name: create volume group inside md1
-      lvg:
-        vg: vg
-        pvs: /dev/md2
-
-#creating logical volumes inside volume group vg0
-    - name: create / LVM partition
-      lvol:
-        vg: vg
-        lv:  root
-        size: 100G
-        force: yes
-    - name: create /var LVM partition
-      lvol:
-        vg: vg
-        lv:  var
-        size: 100G
-        force: yes
-
-#mount partitions
-    - name: mount /boot
-      ansible.posix.mount:
-        path: /boot
-        src: /dev/md0
-        fstype: ext3
-        state: present
-    - name: mount /swap
-      ansible.posix.mount:
-        path: /swap
-        src: /dev/md1
-        fstype: swap
-        state: present
-    - name: mount /
-      ansible.posix.mount:
-        path: /
-        src: /dev/vg/root
-        fstype: ext4
-        state: present
-    - name: mount /var
-      ansible.posix.mount:
-        path: /var
-        src: /dev/vg/var
-        fstype: ext4
-        state: present    
-
+#generate cfg file for installimage
     - name: generate installimage.conf
       template: >
         src={{ item }}.j2
@@ -140,17 +21,18 @@
       with_items:
         - "installimage.conf"
 
-#    - name: install
-#      shell: /root/.oldroot/nfs/install/installimage -a -c /installimage.conf
+#install system through installimage
+    - name: install system
+      shell: /root/.oldroot/nfs/install/installimage -a -c /installimage.conf
 
-#    - name: reboot system
-#      reboot:
-#        reboot_timeout: 300
+    - name: reboot system
+      reboot:
+        reboot_timeout: 300
 
-#    - name: update packages
-#      raw: apt-get update
+    - name: update packages
+      raw: apt-get update
 
-#    - name: install python
-#      raw: apt-get -y install python
+    - name: install python
+      raw: apt-get -y install python
 
 

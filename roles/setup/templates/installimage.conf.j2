@@ -1,18 +1,12 @@
-# {{ ansible_managed }}
-#DRIVE1 /dev/sda
-#DRIVE2 /dev/sdb
-#DRIVE3 /dev/sdc
-#DRIVE4 /dev/sdd
-
+DRIVE1 /dev/sdb
+DRIVE2 /dev/sdc
+SWRAID 1
 BOOTLOADER grub
-
-HOSTNAME skuska
-
-PART swap swap 64G
+HOSTNAME Debian-1101-bullseye-amd64-base
+PART swap  swap 32G
 PART /boot ext3 1G
-PART lvm vg 300G
-
-LV vg root / ext4 100G
-LV vg var /var ext4 100G
-
-IMAGE /root/.oldroot/nfs/images/Debian-1101-bullseye-amd64-base.tar.gz
+PART lvm   vg0  500G
+LV vg0 root /         ext4  100G
+LV vg0 var  /var      ext4  80G
+LV vg0 log  /var/log  ext4  20G
+IMAGE /root/images/Debian-1101-bullseye-amd64-base.tar.gz
