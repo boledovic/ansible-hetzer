@@ -1,0 +1,60 @@
+---
+- name: "Install GPG and Aptitude (recommended when using apt ansible module) and update repositories cache"
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  loop:
+    - gpg
+    - aptitude
+
+# when install ifupdown2 as dependency of proxmoxve, ifupdown don't support ipv6 lines
+- name: remove ipv6 for ifupdown 2
+  lineinfile:
+    path: /etc/network/interfaces
+    regexp: "inet6"
+    state: absent
+
+#- name: "Modify hosts file with correct hostname and ip"
+#  template:
+#    src: templates/prerequisties_hosts.j2
+#    dest: /etc/hosts
+
+# Add proxmox 7 repo
+- name: "Add proxmoxve archive repository keys"
+  apt_key:
+    url: "http://download.proxmox.com/debian/proxmox-release-bullseye.gpg"
+    state: present
+
+- name: "Add proxmoxve archive repository and update cache"
+  apt_repository:
+    repo: "deb http://download.proxmox.com/debian/pve bullseye pve-no-subscription"
+    state: present
+    update_cache: yes
+
+- name: "Apt upgrade"
+  apt:
+    upgrade: full
+    update_cache: yes
+
+- name: "Install packages"
+  apt:
+    name: "{{item}}"
+    state: present
+  loop:
+    - proxmox-ve
+    - postfix
+    - open-iscsi
+
+- name: "Remove packages"
+  apt:
+    name: "{{item}}"
+    state: present
+  loop:
+    - os-prober
+
+- name: "Remove pve-entreprise repo if necessary"
+  file:
+    path: /etc/apt/sources.list.d/pve-enterprise.list
+    state: absent

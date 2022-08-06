@@ -1,0 +1,34 @@
+---
+- name: disable timesyncd
+  command: timedatectl set-ntp false
+
+- name: dist-upgrade
+  apt: 
+    upgrade: dist
+    autoremove: yes
+    autoclean: yes
+
+- name: Install basic tools
+  apt:
+    pkg:
+    - git
+    - wget
+    - build-essential
+    - vim
+    - curl
+    - wget
+    - etckeeper
+
+- name: global git init
+  shell: |
+    git config --global user.email "root@{{ inventory_hostname }}"
+    git config --global user.name ROOT
+
+- name: etckeeper init
+  shell: "[ -d '/etc/.git' ] || etckeeper init"
+
+# alway last
+- name: etckeeper first commit
+  shell: etckeeper commit -m "initial commit"
+  failed_when: False
+  ignore_errors: true
