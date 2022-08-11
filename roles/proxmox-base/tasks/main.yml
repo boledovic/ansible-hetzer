@@ -16,10 +16,10 @@
     regexp: "inet6"
     state: absent
 
-#- name: "Modify hosts file with correct hostname and ip"
-#  template:
-#    src: templates/prerequisties_hosts.j2
-#    dest: /etc/hosts
+- name: "Modify hosts file with correct hostname and ip"
+  template:
+    src: templates/hosts.j2
+    dest: /etc/hosts
 
 # Add proxmox 7 repo
 - name: "Add proxmoxve archive repository keys"
@@ -47,14 +47,14 @@
     - postfix
     - open-iscsi
 
-- name: "Remove packages"
+- name: "Remove packages"  # recommended, but i dont know why
   apt:
     name: "{{item}}"
     state: present
   loop:
     - os-prober
 
-- name: "Remove pve-entreprise repo if necessary"
+- name: "Remove pve-entreprise repo if necessary" # recommended, but i dont know why
   file:
     path: /etc/apt/sources.list.d/pve-enterprise.list
     state: absent

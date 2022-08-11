@@ -1,0 +1,11 @@
+name: Ansible Action 
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: ansible-lint
+        uses: ansible-community/ansible-lint-action@main
