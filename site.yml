@@ -3,7 +3,7 @@
   remote_user: root
   gather_facts: yes
   roles:
-#    - { role: 'os-install', tags: 'os-install' }
-#    - { role: 'base',       tags: 'base' }
-    - { role: 'proxmox-base',       tags: 'proxmox-base' }
-#    - { role: 'proxmox-7',       tags: 'proxmox-7' }
+#    - { role: 'setup',          tags: 'setup' }
+#    - { role: 'base',           tags: 'base' }
+    - { role: 'proxmox-base',   tags: 'proxmox-base' }
+#    - { role: 'proxmox-7',      tags: 'proxmox-7' }
